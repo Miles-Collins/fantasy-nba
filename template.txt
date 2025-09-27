@@ -1,0 +1,740 @@
+# Next.js App Scaffold — Fantasy Hoops
+
+Below is a minimal **Next.js 14 (App Router) + TypeScript + Tailwind** project that adapts the single‑file prototype into a proper app structure with:
+
+- **App Router pages** (`app/page.tsx`, `app/player/[id]/page.tsx` stub)
+- A demo **/api/players** endpoint returning mock data
+- **Modularized code** (`lib/types`, `lib/mockPlayers`, `lib/scoring`)
+- Lightweight **UI components** under `components/ui` so it runs without extra setup (you can replace these with shadcn later)
+
+> Copy these files into a fresh `npx create-next-app@latest` project. If you want, I can export a zip.
+
+---
+
+## File Tree
+```
+.
+├─ app/
+│  ├─ api/players/route.ts
+│  ├─ player/[id]/page.tsx
+│  ├─ globals.css
+│  ├─ layout.tsx
+│  └─ page.tsx
+├─ components/
+│  └─ ui/
+│     ├─ button.tsx
+│     ├─ card.tsx
+│     ├─ dialog.tsx
+│     ├─ input.tsx
+│     ├─ label.tsx
+│     ├─ select.tsx
+│     ├─ slider.tsx
+│     ├─ tabs.tsx
+│     └─ tooltip.tsx
+├─ lib/
+│  ├─ mockPlayers.ts
+│  ├─ scoring.ts
+│  └─ types.ts
+├─ public/
+│  └─ favicon.ico
+├─ tailwind.config.ts
+├─ postcss.config.js
+├─ tsconfig.json
+└─ package.json (add deps if needed)
+```
+
+---
+
+### `app/layout.tsx`
+```tsx
+export const metadata = {
+  title: "Fantasy Hoops",
+  description: "HashtagBasketball-style starter built with Next.js",
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <head />
+      <body className="min-h-screen bg-gradient-to-b from-white to-zinc-50 text-zinc-900">
+        {children}
+      </body>
+    </html>
+  );
+}
+```
+
+---
+
+### `app/globals.css`
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
+
+---
+
+### `lib/types.ts`
+```ts
+export type Position = "PG" | "SG" | "SF" | "PF" | "C";
+export type Team =
+  | "ATL" | "BOS" | "BKN" | "CHA" | "CHI" | "CLE" | "DAL" | "DEN" | "DET" | "GSW"
+  | "HOU" | "IND" | "LAC" | "LAL" | "MEM" | "MIA" | "MIL" | "MIN" | "NOP" | "NYK"
+  | "OKC" | "ORL" | "PHI" | "PHX" | "POR" | "SAC" | "SAS" | "TOR" | "UTA" | "WAS";
+
+export type Player = {
+  id: string;
+  name: string;
+  team: Team;
+  pos: Position[];
+  age: number;
+  adp: number;
+  minutes: number;
+  statsPerGame: {
+    pts: number; reb: number; ast: number; stl: number; blk: number; tpm: number; fg: number; ft: number; tov: number;
+  };
+  recentGameLog?: { g: number; pts: number; reb: number; ast: number }[];
+};
+```
+
+---
+
+### `lib/mockPlayers.ts`
+```ts
+import { Player } from "./types";
+
+export const MOCK_PLAYERS: Player[] = [
+  {
+    id: "1",
+    name: "Shai Gilgeous-Alexander",
+    team: "OKC",
+    pos: ["PG", "SG"],
+    age: 26,
+    adp: 1.8,
+    minutes: 34,
+    statsPerGame: { pts: 31.4, reb: 5.6, ast: 6.2, stl: 2.0, blk: 0.8, tpm: 1.2, fg: 0.535, ft: 0.879, tov: 2.6 },
+    recentGameLog: [
+      { g: 1, pts: 28, reb: 5, ast: 7 },
+      { g: 2, pts: 35, reb: 6, ast: 5 },
+      { g: 3, pts: 33, reb: 4, ast: 8 },
+      { g: 4, pts: 29, reb: 7, ast: 6 },
+      { g: 5, pts: 37, reb: 6, ast: 5 },
+    ],
+  },
+  {
+    id: "2",
+    name: "Nikola Jokić",
+    team: "DEN",
+    pos: ["C"],
+    age: 30,
+    adp: 2.2,
+    minutes: 34,
+    statsPerGame: { pts: 26.8, reb: 12.1, ast: 9.3, stl: 1.3, blk: 0.8, tpm: 1.1, fg: 0.581, ft: 0.835, tov: 3.2 },
+    recentGameLog: [
+      { g: 1, pts: 24, reb: 13, ast: 10 },
+      { g: 2, pts: 29, reb: 12, ast: 8 },
+      { g: 3, pts: 31, reb: 14, ast: 9 },
+      { g: 4, pts: 27, reb: 11, ast: 7 },
+      { g: 5, pts: 26, reb: 12, ast: 11 },
+    ],
+  },
+  {
+    id: "3",
+    name: "Luka Dončić",
+    team: "DAL",
+    pos: ["PG", "SG"],
+    age: 26,
+    adp: 3.1,
+    minutes: 36,
+    statsPerGame: { pts: 33.9, reb: 9.2, ast: 9.8, stl: 1.3, blk: 0.5, tpm: 4.1, fg: 0.487, ft: 0.784, tov: 4.1 },
+    recentGameLog: [
+      { g: 1, pts: 32, reb: 9, ast: 8 },
+      { g: 2, pts: 36, reb: 11, ast: 10 },
+      { g: 3, pts: 29, reb: 8, ast: 9 },
+      { g: 4, pts: 41, reb: 10, ast: 8 },
+      { g: 5, pts: 34, reb: 9, ast: 11 },
+    ],
+  },
+  {
+    id: "4",
+    name: "Anthony Davis",
+    team: "LAL",
+    pos: ["PF", "C"],
+    age: 32,
+    adp: 7.5,
+    minutes: 35,
+    statsPerGame: { pts: 24.9, reb: 12.5, ast: 3.6, stl: 1.3, blk: 2.5, tpm: 0.4, fg: 0.554, ft: 0.789, tov: 2.1 },
+    recentGameLog: [
+      { g: 1, pts: 25, reb: 12, ast: 3 },
+      { g: 2, pts: 22, reb: 14, ast: 4 },
+      { g: 3, pts: 30, reb: 11, ast: 2 },
+      { g: 4, pts: 19, reb: 13, ast: 4 },
+      { g: 5, pts: 27, reb: 12, ast: 3 },
+    ],
+  },
+];
+```
+
+---
+
+### `lib/scoring.ts`
+```ts
+import { Player } from "./types";
+
+export function fantasyScore(p: Player, weights: Record<string, number>) {
+  const s = p.statsPerGame;
+  return (
+    s.pts * (weights.pts ?? 1) +
+    s.reb * (weights.reb ?? 1) +
+    s.ast * (weights.ast ?? 1) +
+    s.stl * (weights.stl ?? 1.5) +
+    s.blk * (weights.blk ?? 1.5) +
+    s.tpm * (weights.tpm ?? 1.1) +
+    (s.fg - 0.45) * 100 * (weights.fg ?? 0.5) +
+    (s.ft - 0.75) * 100 * (weights.ft ?? 0.5) -
+    s.tov * (weights.tov ?? 0.7)
+  );
+}
+```
+
+---
+
+### `app/api/players/route.ts`
+```ts
+import { NextResponse } from "next/server";
+import { MOCK_PLAYERS } from "@/lib/mockPlayers";
+
+export function GET() {
+  return NextResponse.json({ players: MOCK_PLAYERS });
+}
+```
+
+---
+
+### `components/ui` (lightweight stand-ins)
+These are tiny Tailwind components so you don’t need shadcn right away. Replace with shadcn later if you like.
+
+#### `components/ui/button.tsx`
+```tsx
+import React from "react";
+export function Button({ className = "", variant, size, ...props }: any) {
+  const base = "inline-flex items-center justify-center rounded-2xl px-3 py-2 text-sm shadow-sm";
+  const style = variant === "ghost" ? "bg-transparent hover:bg-zinc-100" : "bg-zinc-900 text-white hover:bg-zinc-800";
+  const sz = size === "icon" ? "h-9 w-9 p-0" : "";
+  return <button className={[base, style, sz, className].join(" ")} {...props} />;
+}
+```
+
+#### `components/ui/card.tsx`
+```tsx
+import React from "react";
+export function Card({ className = "", ...props }: any) { return <div className={["rounded-2xl border bg-white", className].join(" ")} {...props} />; }
+export function CardHeader({ className = "", ...props }: any) { return <div className={["p-4", className].join(" ")} {...props} />; }
+export function CardContent({ className = "", ...props }: any) { return <div className={["p-4", className].join(" ")} {...props} />; }
+export function CardTitle({ className = "", ...props }: any) { return <h3 className={["text-lg font-semibold", className].join(" ")} {...props} />; }
+```
+
+#### `components/ui/input.tsx`
+```tsx
+import React from "react";
+export function Input({ className = "", ...props }: any) {
+  return <input className={["w-full rounded-xl border px-3 py-2 outline-none focus:ring", className].join(" ")} {...props} />;
+}
+```
+
+#### `components/ui/label.tsx`
+```tsx
+import React from "react";
+export function Label({ className = "", ...props }: any) {
+  return <label className={["block text-sm text-zinc-600", className].join(" ")} {...props} />;
+}
+```
+
+#### `components/ui/select.tsx`
+```tsx
+import React from "react";
+export function Select({ value, onValueChange, children }: any) {
+  return <div>{React.Children.map(children, (c: any) => React.cloneElement(c, { value, onValueChange }))}</div>;
+}
+export function SelectTrigger({ className = "", children }: any) { return <div className={["rounded-xl border px-3 py-2", className].join(" ")}>{children}</div>; }
+export function SelectContent({ children }: any) { return <div className="mt-2 space-y-1">{children}</div>; }
+export function SelectItem({ value, onValueChange, children }: any) {
+  return (
+    <button onClick={() => onValueChange?.(children)} className="block w-full rounded-lg px-3 py-1 text-left hover:bg-zinc-100">
+      {children}
+    </button>
+  );
+}
+export function SelectValue() { return null; }
+```
+
+#### `components/ui/slider.tsx`
+```tsx
+import React from "react";
+export function Slider({ value, defaultValue, onValueChange, min = 0, max = 100, step = 1 }: any) {
+  const [v, setV] = React.useState<number>(defaultValue?.[0] ?? value?.[0] ?? 0);
+  return (
+    <input
+      type="range"
+      min={min}
+      max={max}
+      step={step}
+      value={v}
+      onChange={(e) => { const nv = Number(e.target.value); setV(nv); onValueChange?.([nv]); }}
+      className="w-full"
+    />
+  );
+}
+```
+
+#### `components/ui/tabs.tsx`
+```tsx
+"use client";
+import React from "react";
+export function Tabs({ defaultValue, children }: any) { const [v, setV] = React.useState(defaultValue); return <div data-tab={v}>{React.Children.map(children, (c: any) => React.cloneElement(c, { value: v, setValue: setV }))}</div>; }
+export function TabsList({ children, className = "" }: any) { return <div className={["rounded-xl bg-zinc-100 p-1", className].join(" ")}>{children}</div>; }
+export function TabsTrigger({ value, setValue, children, className = "" }: any) { return <button onClick={() => setValue(children?.props?.value ?? children)} className={["mx-1 rounded-xl px-3 py-1 text-sm", className].join(" ")}>{children}</button>; }
+export function TabsContent({ children, value, className = "" }: any) { return <div className={["", className].join(" ")}>{children}</div>; }
+```
+
+#### `components/ui/dialog.tsx`
+```tsx
+"use client";
+import React from "react";
+export function Dialog({ open, onOpenChange, children }: any) { if (!open) return null; return <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => onOpenChange?.(false)}>{children}</div>; }
+export function DialogContent({ className = "", children }: any) { return <div onClick={(e) => e.stopPropagation()} className={["w-full max-w-2xl rounded-2xl bg-white p-4", className].join(" ")}>{children}</div>; }
+export function DialogHeader({ children }: any) { return <div className="mb-2">{children}</div>; }
+export function DialogTitle({ className = "", children }: any) { return <div className={["text-lg font-semibold", className].join(" ")}>{children}</div>; }
+```
+
+#### `components/ui/tooltip.tsx`
+```tsx
+import React from "react";
+export function TooltipProvider({ children }: any) { return children; }
+export function Tooltip({ children }: any) { return children; }
+export function TooltipTrigger({ children }: any) { return children; }
+export function TooltipContent({ children }: any) { return <span className="ml-2 text-xs text-zinc-500">{children}</span>; }
+```
+
+---
+
+### `app/page.tsx` (Main UI as a Client Component)
+```tsx
+"use client";
+import React, { useMemo, useState, useEffect } from "react";
+import { BarChart2, ChevronDown, ChevronUp, HelpCircle, Search, Settings2, Star, Users, X } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip as RTooltip, Legend } from "recharts";
+import { Player, Position, Team } from "@/lib/types";
+import { fantasyScore } from "@/lib/scoring";
+
+export default function Page() {
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [query, setQuery] = useState("");
+  const [team, setTeam] = useState<string>("ALL");
+  const [pos, setPos] = useState<string>("ALL");
+  const [scoring, setScoring] = useState<string>("9-cat");
+  const [sortKey, setSortKey] = useState<keyof Player | "score" | "adp">("score");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [openPlayer, setOpenPlayer] = useState<Player | null>(null);
+  const [weights, setWeights] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    fetch("/api/players").then(r => r.json()).then(({ players }) => setPlayers(players));
+  }, []);
+
+  const teams: Team[] = [
+    "ATL","BOS","BKN","CHA","CHI","CLE","DAL","DEN","DET","GSW",
+    "HOU","IND","LAC","LAL","MEM","MIA","MIL","MIN","NOP","NYK",
+    "OKC","ORL","PHI","PHX","POR","SAC","SAS","TOR","UTA","WAS",
+  ];
+
+  const filtered = useMemo(() => {
+    const base = players.map((p) => ({ ...p, score: fantasyScore(p, weights) }));
+    return base
+      .filter((p) => (team === "ALL" ? true : p.team === team))
+      .filter((p) => (pos === "ALL" ? true : p.pos.includes(pos as Position)))
+      .filter((p) => p.name.toLowerCase().includes(query.toLowerCase()));
+  }, [players, team, pos, query, weights]);
+
+  const sorted = useMemo(() => {
+    const arr: any[] = [...filtered];
+    arr.sort((a, b) => {
+      const A = sortKey === "score" ? a.score : sortKey === "adp" ? a.adp : (a as any)[sortKey];
+      const B = sortKey === "score" ? b.score : sortKey === "adp" ? b.adp : (b as any)[sortKey];
+      if (A < B) return sortDir === "asc" ? -1 : 1;
+      if (A > B) return sortDir === "asc" ? 1 : -1;
+      return 0;
+    });
+    return arr;
+  }, [filtered, sortKey, sortDir]);
+
+  function header(h: string, key: keyof Player | "score" | "adp") {
+    const active = sortKey === key;
+    const DirIcon = active && sortDir === "asc" ? ChevronUp : ChevronDown;
+    return (
+      <th className="px-3 py-2 text-left text-sm font-semibold text-zinc-700">
+        <button
+          onClick={() => {
+            if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+            else { setSortKey(key); setSortDir("desc"); }
+          }}
+          className="inline-flex items-center gap-1 hover:opacity-80"
+        >
+          {h}
+          <DirIcon className={`h-4 w-4 ${active ? "opacity-100" : "opacity-30"}`} />
+        </button>
+      </th>
+    );
+  }
+
+  return (
+    <TooltipProvider>
+      <div className="min-h-screen w-full">
+        {/* Top Nav */}
+        <div className="sticky top-0 z-30 border-b bg-white/80 backdrop-blur">
+          <div className="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <BarChart2 className="h-6 w-6" />
+              <span className="text-xl font-bold tracking-tight">Fantasy Hoops</span>
+              <span className="text-xs rounded-full bg-zinc-100 px-2 py-0.5 ml-2">alpha</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon"><HelpCircle className="h-5 w-5" /></Button>
+              <Button variant="ghost" size="icon"><Settings2 className="h-5 w-5" /></Button>
+            </div>
+          </div>
+        </div>
+
+        <main className="mx-auto max-w-7xl px-4 py-6">
+          <Tabs defaultValue="rankings">
+            <TabsList className="grid w-full max-w-md grid-cols-3">
+              <TabsTrigger value="rankings" className="flex gap-2"><Star className="h-4 w-4" />Rankings</TabsTrigger>
+              <TabsTrigger value="teams" className="flex gap-2"><Users className="h-4 w-4" />Teams</TabsTrigger>
+              <TabsTrigger value="tools" className="flex gap-2"><BarChart2 className="h-4 w-4" />Tools</TabsTrigger>
+            </TabsList>
+
+            {/* Rankings Tab */}
+            <TabsContent value="rankings" className="mt-6">
+              <Card className="shadow-sm">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg">Player Rankings & Projections</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Controls */}
+                  <div className="grid grid-cols-1 gap-3 md:grid-cols-6">
+                    <div className="md:col-span-2 flex items-center gap-2">
+                      <Search className="h-4 w-4 text-zinc-500" />
+                      <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search players..." />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Team</Label>
+                      <Select value={team} onValueChange={setTeam}>
+                        <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="ALL">All Teams</SelectItem>
+                          {teams.map((t) => (<SelectItem key={t} value={t}>{t}</SelectItem>))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-xs">Position</Label>
+                      <Select value={pos} onValueChange={setPos}>
+                        <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="ALL">All</SelectItem>
+                          {(["PG","SG","SF","PF","C"] as Position[]).map((p) => (<SelectItem key={p} value={p}>{p}</SelectItem>))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-xs">Scoring</Label>
+                      <Select value={scoring} onValueChange={setScoring}>
+                        <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="9-cat">9‑cat (roto)</SelectItem>
+                          <SelectItem value="8-cat">8‑cat (no TOV)</SelectItem>
+                          <SelectItem value="points">Points League</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-xs">Turnover Weight</Label>
+                      <Slider defaultValue={[70]} max={150} min={0} step={5} onValueChange={([v]) => setWeights((w) => ({ ...w, tov: v / 100 }))} />
+                    </div>
+                  </div>
+
+                  {/* Table */}
+                  <div className="overflow-x-auto rounded-xl border">
+                    <table className="min-w-full text-sm">
+                      <thead className="bg-zinc-50">
+                        <tr>
+                          <th className="px-3 py-2 text-left text-sm font-semibold text-zinc-700">#</th>
+                          {header("Player", "score")}
+                          {header("Team", "team")}
+                          <th className="px-3 py-2 text-left text-sm font-semibold text-zinc-700">POS</th>
+                          {header("Score", "score")}
+                          {header("ADP", "adp")}
+                          <th className="px-3 py-2 text-left text-sm font-semibold text-zinc-700">PTS</th>
+                          <th className="px-3 py-2 text-left text-sm font-semibold text-zinc-700">REB</th>
+                          <th className="px-3 py-2 text-left text-sm font-semibold text-zinc-700">AST</th>
+                          <th className="px-3 py-2 text-left text-sm font-semibold text-zinc-700">STL</th>
+                          <th className="px-3 py-2 text-left text-sm font-semibold text-zinc-700">BLK</th>
+                          <th className="px-3 py-2 text-left text-sm font-semibold text-zinc-700">3PM</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {sorted.map((p: any, i: number) => (
+                          <tr key={p.id} className="odd:bg-white even:bg-zinc-50/50 hover:bg-amber-50/40">
+                            <td className="px-3 py-2 text-zinc-500">{i + 1}</td>
+                            <td className="px-3 py-2">
+                              <button onClick={() => setOpenPlayer(p)} className="font-medium hover:underline">{p.name}</button>
+                            </td>
+                            <td className="px-3 py-2 text-zinc-700">{p.team}</td>
+                            <td className="px-3 py-2 text-zinc-700">{p.pos.join("/")}</td>
+                            <td className="px-3 py-2 font-semibold">{fantasyScore(p, weights).toFixed(1)}</td>
+                            <td className="px-3 py-2">{p.adp.toFixed(1)}</td>
+                            <td className="px-3 py-2">{p.statsPerGame.pts.toFixed(1)}</td>
+                            <td className="px-3 py-2">{p.statsPerGame.reb.toFixed(1)}</td>
+                            <td className="px-3 py-2">{p.statsPerGame.ast.toFixed(1)}</td>
+                            <td className="px-3 py-2">{p.statsPerGame.stl.toFixed(1)}</td>
+                            <td className="px-3 py-2">{p.statsPerGame.blk.toFixed(1)}</td>
+                            <td className="px-3 py-2">{p.statsPerGame.tpm.toFixed(1)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="text-xs text-zinc-500">Tip: click a player name for a quick profile & chart.</div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Teams Tab */}
+            <TabsContent value="teams" className="mt-6">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {teams.map((t) => (
+                  <Card key={t} className="hover:shadow-md transition">
+                    <CardHeader className="pb-2"><CardTitle>{t}</CardTitle></CardHeader>
+                    <CardContent>
+                      <div className="text-sm text-zinc-600 mb-2">Top players</div>
+                      <ul className="space-y-2">
+                        {players.filter((p) => p.team === t).slice(0, 3).map((p) => (
+                          <li key={p.id} className="flex items-center justify-between">
+                            <button className="hover:underline" onClick={() => setOpenPlayer(p)}>{p.name}</button>
+                            <span className="text-xs text-zinc-500">{p.pos.join("/")}</span>
+                          </li>
+                        ))}
+                        {players.filter((p) => p.team === t).length === 0 && (
+                          <div className="text-xs text-zinc-400">— no mock data yet —</div>
+                        )}
+                      </ul>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
+
+            {/* Tools Tab */}
+            <TabsContent value="tools" className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
+              <Card>
+                <CardHeader className="pb-2"><CardTitle>Projection Weights</CardTitle></CardHeader>
+                <CardContent className="space-y-4">
+                  {(["pts","reb","ast","stl","blk","tpm","fg","ft","tov"] as const).map((k) => (
+                    <WeightRow key={k} label={k.toUpperCase()} k={k} weights={weights} setWeights={setWeights} />
+                  ))}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="pb-2"><CardTitle>How to Hook Up Real Data</CardTitle></CardHeader>
+                <CardContent className="space-y-3 text-sm text-zinc-700">
+                  <ol className="list-decimal pl-5 space-y-2">
+                    <li>Point your fetch to a real endpoint (e.g., Supabase/Firehose/your API).</li>
+                    <li>Replace mock stats with model projections (9‑cat z‑scores, points weights).</li>
+                    <li>Add ISR or caching for speed on Vercel.</li>
+                    <li>Create `/player/[id]` for deep player pages with SEO.</li>
+                  </ol>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </main>
+
+        {/* Player Dialog */}
+        <Dialog open={!!openPlayer} onOpenChange={() => setOpenPlayer(null)}>
+          <DialogContent className="sm:max-w-2xl">
+            <DialogHeader>
+              <DialogTitle className="flex items-center justify-between">
+                <span>{openPlayer?.name}</span>
+                <Button size="icon" variant="ghost" onClick={() => setOpenPlayer(null)}><X className="h-5 w-5" /></Button>
+              </DialogTitle>
+            </DialogHeader>
+            {openPlayer && (
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
+                <div className="md:col-span-2 space-y-2">
+                  <InfoRow label="Team" value={openPlayer.team} />
+                  <InfoRow label="Positions" value={openPlayer.pos.join("/")} />
+                  <InfoRow label="ADP" value={openPlayer.adp.toFixed(1)} />
+                  <InfoRow label="Minutes" value={`${openPlayer.minutes} mpg`} />
+                  <div className="text-xs text-zinc-500">Fantasy Score (current weights): {fantasyScore(openPlayer, weights).toFixed(1)}</div>
+                </div>
+                <div className="md:col-span-3 h-56">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={openPlayer.recentGameLog} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
+                      <XAxis dataKey="g" tick={{ fontSize: 12 }} />
+                      <YAxis tick={{ fontSize: 12 }} />
+                      <RTooltip />
+                      <Legend />
+                      <Line type="monotone" dataKey="pts" strokeWidth={2} dot={false} />
+                      <Line type="monotone" dataKey="reb" strokeWidth={2} dot={false} />
+                      <Line type="monotone" dataKey="ast" strokeWidth={2} dot={false} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        <footer className="mx-auto max-w-7xl px-4 py-12 text-xs text-zinc-500">Built with ❤️ in Next.js & Tailwind.</footer>
+      </div>
+    </TooltipProvider>
+  );
+}
+
+function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between rounded-lg bg-zinc-50 px-3 py-2">
+      <span className="text-xs text-zinc-500">{label}</span>
+      <span className="text-sm font-medium">{value}</span>
+    </div>
+  );
+}
+
+function WeightRow({ label, k, weights, setWeights }: { label: string; k: string; weights: Record<string, number>; setWeights: (u: any) => void }) {
+  const v = (weights[k] ?? 1) * 100;
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between">
+        <Label>{label}</Label>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="text-xs text-zinc-500">{(v / 100).toFixed(2)}x</span>
+          </TooltipTrigger>
+          <TooltipContent>Multiply contribution by this factor.</TooltipContent>
+        </Tooltip>
+      </div>
+      <Slider value={[v]} max={300} min={0} step={5} onValueChange={([nv]) => setWeights((w: any) => ({ ...w, [k]: nv / 100 }))} />
+    </div>
+  );
+}
+```
+
+---
+
+### `app/player/[id]/page.tsx` (stub for deep links)
+```tsx
+import { MOCK_PLAYERS } from "@/lib/mockPlayers";
+
+export default function PlayerPage({ params }: { params: { id: string } }) {
+  const player = MOCK_PLAYERS.find((p) => p.id === params.id);
+  if (!player) return <div className="p-6">Player not found.</div>;
+  return (
+    <div className="mx-auto max-w-3xl p-6">
+      <h1 className="text-2xl font-bold">{player.name}</h1>
+      <p className="text-zinc-600">{player.team} · {player.pos.join("/")}</p>
+      {/* Add richer profile here (charts, splits, news) */}
+    </div>
+  );
+}
+```
+
+---
+
+### Tailwind & TS Config
+`
+#### `tailwind.config.ts`
+```ts
+import type { Config } from "tailwindcss";
+const config: Config = {
+  content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./pages/**/*.{ts,tsx}"],
+  theme: { extend: {} },
+  plugins: [],
+};
+export default config;
+```
+
+#### `postcss.config.js`
+```js
+module.exports = { plugins: { tailwindcss: {}, autoprefixer: {} } };
+```
+
+#### `tsconfig.json`
+```json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": false,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "baseUrl": ".",
+    "paths": { "@/*": ["./*"] }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules"]
+}
+```
+
+---
+
+### Optional `package.json` additions
+Make sure you have these installed:
+```json
+{
+  "dependencies": {
+    "next": "^14.2.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "lucide-react": "^0.446.0",
+    "recharts": "^2.10.3"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.17",
+    "postcss": "^8.4.31",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.4.0"
+  }
+}
+```
+
+---
+
+## Quick Start
+1. `npx create-next-app fantasy-hoops --ts`
+2. Replace the generated files with the ones above (keep `.gitignore` etc.).
+3. `npm i lucide-react recharts tailwindcss postcss autoprefixer`
+4. `npm run dev` → open http://localhost:3000
+
+When you’re ready, we can:
+- Swap the lightweight UI for **shadcn/ui** and move styles to Radix-based components.
+- Hook `/api/players` to a real data source.
+- Add `/draft`, `/schedule`, and team/player SEO pages with metadata.
